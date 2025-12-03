@@ -1,0 +1,13 @@
+# Python virtual environment
+venv/
+__pycache__/
+
+# Sensitive environment variables
+.env
+
+# Personal encrypted seed
+encrypted_seed.txt
+
+# IDE files
+.vscode/
+.idea/
