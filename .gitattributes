@@ -3,3 +3,8 @@
 
 # Treat PEM files as binary so Git doesn't touch their line endings
 *.pem binary
+
+
+cron/2fa-cron text eol=lf
+
+
