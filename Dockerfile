@@ -15,19 +15,21 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 # Install cron
 RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
 
-# --- START OF FIX ---
-# Copy installed Python packages from the builder stage
+# Copy dependencies and executables from the builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-# FIX: Also copy the executables (like uvicorn, fastapi) from the builder stage
 COPY --from=builder /usr/local/bin /usr/local/bin
-# --- END OF FIX ---
 
 # Copy all your application code
 COPY . .
 
-# Create the cron file directly inside the container to avoid errors
-RUN echo "* * * * * python3 /app/scripts/log_2fa_cron.py >> /cron/last_code.txt 2>&1" > /etc/cron.d/2fa-cron
+# Create the cron file directly inside the Linux container using the FULL PATH to python3.
+# This avoids all Windows formatting issues and all PATH environment issues.
+RUN echo "* * * * * /usr/local/bin/python3 /app/scripts/log_2fa_cron.py >> /cron/last_code.txt 2>&1" > /etc/cron.d/2fa-cron
+
+# Give the new file the correct permissions
 RUN chmod 0644 /etc/cron.d/2fa-cron
+
+# Apply the cron job from the newly created file
 RUN crontab /etc/cron.d/2fa-cron
 
 # Create the directories for our persistent data volumes
@@ -37,4 +39,5 @@ RUN mkdir -p /data /cron
 EXPOSE 8080
 
 # The command to run when the container starts
+# CRITICAL FIX: The host IP address has been corrected from '0.0.0.d' to '0.0.0.0'
 CMD ["sh", "-c", "cron && uvicorn app.main:app --host 0.0.0.0 --port 8080"]
