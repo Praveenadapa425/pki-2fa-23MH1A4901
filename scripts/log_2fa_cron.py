@@ -26,6 +26,10 @@ def main():
             return
 
         hex_seed = SEED_FILE.read_text(encoding="utf-8").strip()
+        # Validate that the hex seed is 64 characters and contains only hex characters
+        if len(hex_seed) != 64 or not all(c in "0123456789abcdef" for c in hex_seed):
+            print(f"Invalid seed format in {SEED_FILE}", file=sys.stderr)
+            return
         code = generate_totp_code(hex_seed)
         timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         

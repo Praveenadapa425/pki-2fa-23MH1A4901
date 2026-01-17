@@ -25,6 +25,9 @@ def load_private_key(path: str = "student_private.pem"):
         project_root = Path(__file__).parent.parent
         filepath = project_root / path
     
+    if not filepath.exists():
+        raise FileNotFoundError(f"Private key file not found: {filepath}")
+    
     data = filepath.read_bytes()
     return serialization.load_pem_private_key(data, password=None)
 
@@ -39,7 +42,17 @@ def load_public_key(path: str):
     Returns:
         The public key object from the cryptography library.
     """
-    data = Path(path).read_bytes()
+    # First try the given path, then try relative to project root
+    filepath = Path(path)
+    if not filepath.exists():
+        # Try to find the key file in the project root
+        project_root = Path(__file__).parent.parent
+        filepath = project_root / path
+    
+    if not filepath.exists():
+        raise FileNotFoundError(f"Public key file not found: {filepath}")
+    
+    data = filepath.read_bytes()
     return serialization.load_pem_public_key(data)
 
 
@@ -57,23 +70,33 @@ def decrypt_seed(encrypted_seed_b64: str, private_key) -> str:
     Returns:
         The decrypted 64-character hexadecimal seed as a string.
     """
-    ciphertext = base64.b64decode(encrypted_seed_b64)
+    try:
+        ciphertext = base64.b64decode(encrypted_seed_b64)
+    except Exception:
+        raise ValueError("Invalid base64 encoding in encrypted seed")
 
-    plaintext = private_key.decrypt(
-        ciphertext,
-        padding.OAEP(
-            mgf=padding.MGF1(algorithm=hashes.SHA256()),
-            algorithm=hashes.SHA256(),
-            label=None,
-        ),
-    )
+    try:
+        plaintext = private_key.decrypt(
+            ciphertext,
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None,
+            ),
+        )
+    except Exception as e:
+        raise ValueError(f"Decryption failed: {e}")
 
     # Decode the decrypted bytes and validate the seed's format for robustness.
-    hex_seed = plaintext.decode("utf-8").strip()
+    try:
+        hex_seed = plaintext.decode("utf-8").strip()
+    except UnicodeDecodeError:
+        raise ValueError("Decrypted content is not valid UTF-8")
+        
     if len(hex_seed) != 64:
-        raise ValueError("Decrypted seed must be 64 hex characters long")
+        raise ValueError(f"Decrypted seed must be 64 hex characters long, got {len(hex_seed)}")
     if not all(c in "0123456789abcdef" for c in hex_seed):
-        raise ValueError("Decrypted seed contains non-hex characters")
+        raise ValueError(f"Decrypted seed contains non-hex characters: {hex_seed}")
 
     return hex_seed
 

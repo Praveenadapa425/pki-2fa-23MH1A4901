@@ -27,7 +27,11 @@ def get_hex_seed() -> str:
     if not SEED_FILE.exists():
         raise HTTPException(status_code=500, detail="Seed not decrypted yet.")
     try:
-        return SEED_FILE.read_text(encoding="utf-8").strip()
+        hex_seed = SEED_FILE.read_text(encoding="utf-8").strip()
+        # Validate that the hex seed is 64 characters and contains only hex characters
+        if len(hex_seed) != 64 or not all(c in "0123456789abcdef" for c in hex_seed):
+            raise ValueError("Invalid seed format")
+        return hex_seed
     except Exception:
         raise HTTPException(status_code=500, detail="Error reading seed file.")
 
@@ -45,10 +49,19 @@ def health_check():
 def decrypt_seed_endpoint(body: DecryptSeedRequest):
     """Decrypts the provided seed and saves it to the persistent volume."""
     try:
+        # Ensure the data directory exists
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        
         private_key = load_private_key("student_private.pem")
         hex_seed = decrypt_seed(body.encrypted_seed, private_key)
+        
+        # Validate that the hex seed is 64 characters and contains only hex characters
+        if len(hex_seed) != 64 or not all(c in "0123456789abcdef" for c in hex_seed):
+            raise ValueError("Invalid seed format")
+        
         SEED_FILE.write_text(hex_seed, encoding="utf-8")
-    except Exception:
+    except Exception as e:
+        print(f"Decryption error: {e}")  # Log for debugging
         raise HTTPException(status_code=500, detail="Decryption failed")
     return {"status": "ok"}
 
