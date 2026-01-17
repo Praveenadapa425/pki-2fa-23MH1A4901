@@ -18,7 +18,14 @@ def load_private_key(path: str = "student_private.pem"):
     Returns:
         The private key object from the cryptography library.
     """
-    data = Path(path).read_bytes()
+    # First try the given path, then try relative to project root
+    filepath = Path(path)
+    if not filepath.exists():
+        # Try to find the key file in the project root
+        project_root = Path(__file__).parent.parent
+        filepath = project_root / path
+    
+    data = filepath.read_bytes()
     return serialization.load_pem_private_key(data, password=None)
 
 

@@ -4,10 +4,15 @@ from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
 from pathlib import Path
 
-# --- Correct Imports for a Packaged App ---
-from .crypto_utils import load_private_key, decrypt_seed
-from .totp_utils import generate_totp_code, verify_totp_code, seconds_remaining_in_period
-from .config import SEED_FILE, DATA_DIR
+# --- Correct Imports for Direct Execution ---
+try:
+    from .crypto_utils import load_private_key, decrypt_seed
+    from .totp_utils import generate_totp_code, verify_totp_code, seconds_remaining_in_period
+    from .config import SEED_FILE, DATA_DIR
+except ImportError:
+    from crypto_utils import load_private_key, decrypt_seed
+    from totp_utils import generate_totp_code, verify_totp_code, seconds_remaining_in_period
+    from config import SEED_FILE, DATA_DIR
 
 app = FastAPI(title="PKI 2FA Microservice")
 

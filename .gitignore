@@ -1,13 +1,99 @@
-# Python virtual environment
+# Dependencies and virtual environments
 venv/
+env/
+ENV/
+.env
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.cython_debug/
+
+# Sensitive files
+encrypted_seed.txt
+*.key
+*.p12
+*.pfx
+*.secret
+
+# Data files and logs
+/data/
+cron_output/
+seed-data/
+cron-last-code.txt
+*.log
+*.sqlite
+*.db
 
 # Sensitive environment variables
 .env
 
-# Personal encrypted seed
-encrypted_seed.txt
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Python specific
+*.egg
+*.egg-info
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.nox/
+
+# Local config files
+config.local
+*.local
+
+# Test files and development artifacts
+*test*.py
+test_*.py
+*_test.py
+verify_decryption.py
+comprehensive_test.py
+final_verification.py
+generate_test_seed.py
+get_encrypted_seed.py
+run_server.py
+test_totp_timing.py
+submission_info.txt
+file.txt
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Output files from scripts
+*.out
+*.result
+
+# Windows batch files
+test_functionality.bat
+*.bat
+
+# Other temporary files
+*.tmp
+*.temp
+.DS_Store
